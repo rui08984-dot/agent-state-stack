@@ -69,13 +69,17 @@ function section(raw, jsonKey, max, label) {
 
 try {
   const hasStack = existsSync(join(root, '.sessionrelay'));
-  const handoffDir = join(root, '.scratch', 'handoff');
-  const hasHistory = existsSync(handoffDir) && readdirSync(handoffDir).filter(f => f.endsWith('.md')).length > 0;
+  const scratchDir = join(root, '.scratch');
+  const handoffDir = join(scratchDir, 'handoff');
+  // 历史信号=交接链（.scratch/handoff/*.md）或进度锚（.scratch/ 直属 *PROGRESS*.md，progress-anchor 约定锚位）
+  const hasHandoff = existsSync(handoffDir) && readdirSync(handoffDir).filter(f => f.endsWith('.md')).length > 0;
+  const hasAnchors = existsSync(scratchDir) && readdirSync(scratchDir).some(f => f.endsWith('.md') && /PROGRESS/i.test(f));
+  const hasHistory = hasHandoff || hasAnchors;
 
   if (!hasStack && !hasHistory) process.exit(0); // 普通目录零打扰
 
   if (!hasStack && hasHistory) {
-    emit(`【状态栈提示】${basename(root)} 检测到历史交接链(.scratch/handoff/)但未接入状态栈。用户说"接入"即执行：srelay init → 从交接链/锚点生成 progress.md 看板与 architecture.mmd。本轮先按原文件工作即可。`);
+    emit(`【状态栈提示】${basename(root)} 检测到历史状态信号（交接链或进度锚）但未接入状态栈。用户说"接入"即执行：srelay init → 从交接链/锚点生成 progress.md 看板与 architecture.mmd。本轮先按原文件工作即可。`);
     process.exit(0);
   }
 

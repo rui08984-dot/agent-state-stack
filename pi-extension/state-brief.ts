@@ -100,9 +100,14 @@ export default function stateBrief(pi: any) {
 			if (forced && elapsed < FORCED_COOLDOWN_MS) return undefined;
 
 			const hasStack = existsSync(join(cwd, ".sessionrelay"));
-			const handoffDir = join(cwd, ".scratch", "handoff");
-			const hasHistory =
-				existsSync(handoffDir) && readdirSync(handoffDir).some((f) => f.endsWith(".md"));
+			const scratchDir = join(cwd, ".scratch");
+			const handoffDir = join(scratchDir, "handoff");
+			// 历史信号=交接链（.scratch/handoff/*.md）或进度锚（.scratch/ 直属 *PROGRESS*.md，progress-anchor 约定锚位）
+			const hasHandoff = existsSync(handoffDir) &&
+				readdirSync(handoffDir).some((f) => f.endsWith(".md"));
+			const hasAnchors = existsSync(scratchDir) &&
+				readdirSync(scratchDir).some((f) => f.endsWith(".md") && /PROGRESS/i.test(f));
+			const hasHistory = hasHandoff || hasAnchors;
 
 			if (!hasStack && !hasHistory) return undefined; // 普通目录零打扰
 
