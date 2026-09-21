@@ -1,0 +1,24 @@
+{
+  "name": "agent-state-stack",
+  "version": "0.1.0",
+  "description": "跨 AI 编码代理的共享状态栈：开场简报注入（ZCode hook / pi 扩展）+ SessionRelay 记忆层 + 看板与依赖图面板 | Cross-agent shared state stack for ZCode ⇄ Pi",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rui08984-dot/agent-state-stack.git"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "keywords": [
+    "ai-agents",
+    "session-relay",
+    "kanban",
+    "mermaid",
+    "hook",
+    "cross-agent",
+    "zcode",
+    "pi"
+  ]
+}

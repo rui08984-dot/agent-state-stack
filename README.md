@@ -73,7 +73,9 @@ cd 你的项目 && srelay init --yes           # 初始化 + 回填近 30 天会
 
 ### ② pi：开场简报扩展
 
-把 `pi-extension/state-brief.ts` 放进 `~/.pi/agent/extensions/`，改文件顶部两行常量（NODE / SRELAY）即可。pi 会在每次 `before_agent_start` 自动注入同一份简报（本地小模型也无需自觉）。
+把 `pi-extension/state-brief.ts` 放进 `~/.pi/agent/extensions/` 即可——**默认安装零编辑**（自动识别各平台 npm 全局位置）。自定义 node/srelay 路径时设环境变量 `STACK_NODE` / `SRELAY_JS`。pi 会在每次 `before_agent_start` 自动注入同一份简报（本地小模型也无需自觉）。
+
+> ⚠️ pi 是 Bun 内核：扩展内 spawn 外部脚本**禁止用 `process.execPath`**（它指向 pi.exe 本体）——本仓库脚本已显式处理。
 
 ### ③ 面板生成器
 
@@ -94,6 +96,13 @@ node scripts/gen_dashboard.mjs <项目根>    # progress.md + architecture.mmd �
 | **接入** | 老项目一键上栈（srelay init → 生成看板与依赖图） |
 
 **注入 ≠ 强制续作**——简报只是让代理"知道现状"，用户的下一句话才是指令。
+
+## 状态与局限（诚实版）
+
+- **v0.1.0**：单机自用起家（Windows 优先），2026-09-21 起路径参数化+版本化；经历过两轮红队审计（32 条发现，报告方法沉淀在 docs/ops.md）
+- **已知不适合**：多用户/云端部署；macOS/Linux 路径为通式默认、未实测；不是通用框架——它假设"两个代理+一个项目目录"的最小场景
+- **依赖边界**：SessionRelay 0.5.x（上游 [#1](https://github.com/EwanJasper/SessionRelay/issues/1) 的 Windows 自启 bug 已有本地兜底，见 docs/ops.md）
+- **路线**：配置继续外置 → 模板完善 → 上游修复后简化兜底 → 视需求加多面板主题
 
 ## 已知边界与运维
 

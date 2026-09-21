@@ -14,9 +14,13 @@ import { execFileSync } from "node:child_process";
 import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { join, basename } from "node:path";
 
-// ===== 按你的机器改这两行 =====
-const NODE = "node"; // node 可执行文件绝对路径最稳
-const SRELAY = "C:/Users/<你>/AppData/Roaming/npm/node_modules/@ewanjasper/sessionrelay/dist/srelay.js";
+// ===== 配置：环境变量优先（STACK_NODE / SRELAY_JS），默认自动识别各平台 npm 全局安装位 =====
+// Windows 默认安装无需改本文件；自定义安装位时设环境变量即可。
+const NODE = process.env.STACK_NODE || "node";
+const SRELAY = process.env.SRELAY_JS
+  || (process.platform === "win32"
+    ? join(process.env.APPDATA || "", "npm/node_modules/@ewanjasper/sessionrelay/dist/srelay.js")
+    : "/usr/lib/node_modules/@ewanjasper/sessionrelay/dist/srelay.js");
 // ==============================
 const DBG = process.env.SRELAY_BRIEF_DEBUG === "1";
 const THROTTLE_MS = 10 * 60 * 1000;
