@@ -1,0 +1,24 @@
+flowchart TB
+    subgraph L1["第 1 层 · 基础设施"]
+        BASE["示例：地基模块"]
+    end
+    subgraph L2["第 2 层 · 核心功能"]
+        CORE1["示例：核心模块 1"]
+        CORE2["示例：核心模块 2"]
+    end
+    subgraph L3["第 3 层 · 上层应用"]
+        APP["示例：应用模块"]
+    end
+    BASE --> CORE1
+    BASE --> CORE2
+    CORE1 --> APP
+    CORE2 --> APP
+    classDef done fill:#2e7d32,color:#fff
+    classDef doing fill:#f9a825,color:#000
+    classDef waiting fill:#9e9e9e,color:#fff,stroke-dasharray:3
+    class BASE done
+    class CORE1,CORE2 doing
+    class APP waiting
+
+%% 纪律：层级=subgraph（自上而下）、依赖=连线、状态=着色（绿done/黄doing/灰waiting）
+%% 模块状态变化时改 class 行；大改需求时重画本图

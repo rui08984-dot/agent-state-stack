@@ -1,0 +1,9 @@
+# 本地运行产物
+dashboard.html
+*.log
+
+# 记忆层数据（各项目自己的 .sessionrelay/ 不入库；交接备份走 srelay export .hop）
+.sessionrelay/
+
+# mermaid 本地库（体积大，README 有下载命令；不内嵌时自动走 CDN）
+scripts/vendor/
