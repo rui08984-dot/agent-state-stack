@@ -116,7 +116,7 @@ export default function stateBrief(pi: any) {
 				return {
 					message: {
 						customType: "state-brief",
-						content: `【状态栈提示】${basename(cwd)} 有历史交接链(.scratch/handoff/)未接入状态栈。用户说"接入"即执行：srelay init → 从交接链/锚点生成 progress.md 与 architecture.mmd。`,
+						content: `【状态栈提示】${basename(cwd)} 有历史状态信号（交接链或进度锚）未接入状态栈。用户说"接入"即执行：srelay init → 从交接链/锚点生成 progress.md 与 architecture.mmd。`,
 						display: false,
 					},
 				};
