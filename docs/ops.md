@@ -14,6 +14,7 @@
 | dashboard 无图形 | mermaid vendor 文件在否 | 丢了重下，或靠 CDN 兜底（自动切换） |
 | 看板状态行被面板丢弃 | emoji 正则无 `/u` 标志：🔄（U+1F504）被拆代理单元，`str[0]` 取到半个码点 | 正则一律加 `/u`；取码点用 `[...str][0]`（本仓库脚本已内置） |
 | 会话捕获停摆（重启后） | Windows 自启链：Run 键→vbs→cmd→node；**SessionRelay 0.5.x 生成的 cmd 不转义 node 路径**（`C:\Program Files` 被劈成 `C:\Program`） | 给 cmd 里 node 路径加引号；上游 issue [#1](https://github.com/EwanJasper/SessionRelay/issues/1)；注意 `--install-service` 每次重装都会覆写回无引号版 |
+| **守护进程资源泄漏（上游，0921 实测）** | `watch --foreground` ①不绑父生命周期（调用方退出→孤儿，实测 18 实例并存）②无有效单实例锁 ③句柄泄漏加速（2 分钟 1409→4400）④每 7s 轮询源库+jieba 全量重建→内存锯齿 812MB↔1904MB/10s | 门卫脚本 `pwsh -File scripts/watch-guard.ps1`（清光旧实例→链路拉起一个→验证）；**禁止无超时 spawn watch --foreground**；上游 [#1](https://github.com/EwanJasper/SessionRelay/issues/1) 正文附问题 |
 | srelay 偶发 exit=1 | stats.json 共享 .tmp 名 + rename 竞态（高并发实测可复现） | 脚本 try/catch 兜住即可；已随 #1 上报 |
 
 ## 2. 稳定性设计原则
