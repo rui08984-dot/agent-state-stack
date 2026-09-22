@@ -1,12 +1,16 @@
-# Agent State Stack - daemon guard (ensures exactly ONE srelay watch instance)
-# v3: + self-heal for upstream #1 (auto-quotes node path if --install-service regenerated unquoted cmd)
+# Agent State Stack - daemon guard (ensures exactly ONE srelay watch instance per project)
+# v4: + self-heal for upstream #1 (auto-quotes node path if --install-service regenerated unquoted cmd)
 #     + local-patch integrity check (npm update silently reverts dist patches -> fail loudly here)
 #     + daily guard.log trail (scheduled task output is invisible)
+#     + red-team F2 (0922): restart ALL relay projects' daemons, not just the Run-key one
+#       (previous behavior left non-key projects un-captured from 10:00 until their next CLI use)
+# ASCII-only on purpose: must parse identically under PowerShell 5.1 and 7 (no CJK literals).
 # Called via: pwsh -NoProfile -ExecutionPolicy Bypass -File <this file>
 $ErrorActionPreference = 'SilentlyContinue'
 
-# 0) Self-heal: quote node path in watch-task.cmd files (upstream #1 workaround)
-foreach ($cmdFile in @("E:\music player\.sessionrelay\watch-task.cmd", "D:\agent1super\.sessionrelay\watch-task.cmd")) {
+# 0) Self-heal: quote node path in watch-task.cmd files (upstream #1 workaround; ASCII-path files only,
+#    CJK-path cmds are excluded on purpose - re-encoding them here could corrupt the UTF-8 content)
+foreach ($cmdFile in @("D:\agent1super\.sessionrelay\watch-task.cmd", "E:\music player\.sessionrelay\watch-task.cmd")) {
   if (Test-Path $cmdFile) {
     $raw = Get-Content $cmdFile -Raw
     if ($raw -match '(?m)^C:\\Program Files\\nodejs\\node\.exe') {
@@ -24,14 +28,21 @@ Get-CimInstance Win32_Process -Filter "Name='node.exe'" |
 
 Start-Sleep -Seconds 2
 
-# 2) Start exactly one via the registered logon chain (Run key -> E drive watch-task.vbs)
-Start-Process wscript.exe -ArgumentList '"E:\music player\.sessionrelay\watch-task.vbs"' -WindowStyle Hidden
+# 2) Start one daemon per registered relay project (per-project daemons are legitimate; the
+#    per-project named-pipe lock dedupes any surplus). E:\* glob auto-covers CJK-path projects.
+$vbsList = @("D:\agent1super\.sessionrelay\watch-task.vbs", "E:\music player\.sessionrelay\watch-task.vbs")
+$eGlob = (Get-Item "E:\*\.sessionrelay\watch-task.vbs" -ErrorAction SilentlyContinue).FullName
+if ($eGlob) { $vbsList += $eGlob }
+$vbsList = $vbsList | Where-Object { $_ } | Select-Object -Unique
+foreach ($vbs in $vbsList) {
+  Start-Process wscript.exe -ArgumentList ('"' + $vbs + '"') -WindowStyle Hidden
+}
 Start-Sleep -Seconds 8
 
-# 3) Verify: exactly 1 instance + fresh heartbeat in watch.log
+# 3) Verify: one instance per project + fresh heartbeat in watch.log
 $c = (Get-CimInstance Win32_Process -Filter "Name='node.exe'" |
   Where-Object { $_.CommandLine -match 'srelay\.js.*watch --foreground' }).Count
-Write-Output ("Instances: " + $c + " (expected 1)")
+Write-Output ("Instances: " + $c + " (expected " + $vbsList.Count + ")")
 
 $log = "E:\music player\.sessionrelay\watch.log"
 if (Test-Path $log) {
@@ -49,5 +60,5 @@ if (Test-Path $patchScript) {
 Write-Output ("Patches: " + $patchStatus)
 
 # 5) Daily trail (scheduled task output is invisible; one line per run)
-Add-Content -LiteralPath "D:\agent1super\.sessionrelay\guard.log" -Value ("{0}  instances={1}  patches={2}" -f (Get-Date -Format 'yyyy-MM-dd HH:mm'), $c, $patchStatus) -Encoding UTF8
+Add-Content -LiteralPath "D:\agent1super\.sessionrelay\guard.log" -Value ("{0}  instances={1}/{2}  patches={3}" -f (Get-Date -Format 'yyyy-MM-dd HH:mm'), $c, $vbsList.Count, $patchStatus) -Encoding UTF8
 Write-Output "Note: 'srelay watch --status' is per-project (checks cwd lock). Trust this output, guard.log, or the log heartbeat."
