@@ -53,3 +53,21 @@ Write-Output ("Fork: " + $forkStatus)
 # 5) Daily trail (scheduled task output is invisible; one line per run)
 Add-Content -LiteralPath "D:\agent1super\.sessionrelay\guard.log" -Value ("{0}  instances={1}/1  fork={2}" -f (Get-Date -Format 'yyyy-MM-dd HH:mm'), $c, $forkStatus) -Encoding UTF8
 Write-Output "Note: 'srelay watch --status' is per-project (checks cwd lock). Trust this output, guard.log, or the log heartbeat."
+
+# 6) Refresh dashboards (dashboard.html is a SNAPSHOT of progress.md; bound staleness to <= 1 day.
+#    Instant refresh stays available via the "刷新面板" command. CJK roots come from the E:\* glob,
+#    keeping this file ASCII-only.)
+$gen = "D:\agent1super\agent-state-stack\scripts\gen_dashboard.mjs"
+$dashRoots = @("D:\agent1super", "E:\music player")
+$eVbs = (Get-Item "E:\*\.sessionrelay\watch-task.vbs" -ErrorAction SilentlyContinue).FullName
+if ($eVbs) { $dashRoots += ($eVbs | ForEach-Object { Split-Path (Split-Path $_) }) }
+$dashRoots = $dashRoots | Where-Object { $_ } | Select-Object -Unique
+$dashOk = 0
+foreach ($r in $dashRoots) {
+  if ((Test-Path "$r\progress.md") -and (Test-Path $gen)) {
+    & "D:\agent1super\node\node.exe" $gen $r | Out-Null
+    if ($LASTEXITCODE -eq 0) { $dashOk++ }
+  }
+}
+Write-Output ("Dashboards refreshed: " + $dashOk + "/" + $dashRoots.Count)
+Add-Content -LiteralPath "D:\agent1super\.sessionrelay\guard.log" -Value ("{0}  dashboards={1}/{2}" -f (Get-Date -Format 'yyyy-MM-dd HH:mm'), $dashOk, $dashRoots.Count) -Encoding UTF8
