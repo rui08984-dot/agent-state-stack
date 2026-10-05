@@ -114,6 +114,10 @@ node scripts/gen_dashboard.mjs <项目根>    # progress.md + architecture.mmd �
 - [pi coding agent](https://github.com/earendil-works/pi)——扩展系统与 `--mode rpc`
 - 上游问题反馈：[SessionRelay#1](https://github.com/EwanJasper/SessionRelay/issues/1)（Windows 守护脚本路径转义）
 
+---
+
+<sub>如果这个项目帮到你了，点个 ⭐ 就是最好的支持 —— 也能让更多人找到它。</sub>
+
 ## License
 
 MIT
